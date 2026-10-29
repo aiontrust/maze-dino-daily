@@ -47,6 +47,7 @@ const MAZE_DINO_URL = ''; // set to the maze-dino game URL to show a "Tip the di
 ## Offline and install
 
 - After one visit online, Dino Daily opens without a connection. Points, streak and your saved dinos are already stored on the device, so everything keeps working.
+- Opening it while online also lets the other MAZE DINO pages (the landing page and the other two games) save themselves, so one visit here sets up all four. This works while all four stay on `aiontrust.github.io`.
 - When you are online the newest page is always loaded; the saved copy is only used when there is no connection.
 - **Install:** on iPhone use Safari → Share → Add to Home Screen. On Android use the Chrome menu → Install app. It then opens full screen with the MAZE dino icon.
 - If a phone keeps showing an old logo or icon, change the version name in `sw.js` (`mdd-daily-v1` to `mdd-daily-v2`), commit, and open the game online once.
