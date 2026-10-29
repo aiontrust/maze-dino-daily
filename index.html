@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dino Daily | MAZE DINO Puzzle Adventures</title>
+<meta name="description" content="A free daily dino puzzle: slide the tiles or mix and match a hybrid dino. Earn points and keep your streak.">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#ff2fa8; --card:#fff; --text:#1a1d2e; --muted:#5b6180; --accent:#c4007a; --border:#f3c4e0; --soft:#fff0f8; --ok:#1a9e5c; }
+  * { box-sizing: border-box; }
+  [hidden] { display:none !important; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 20px 14px 56px; }
+  header { display:flex; align-items:center; gap:12px; color:#fff; }
+  header img { width:56px; height:56px; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,.25); }
+  h1 { font-size:1.5rem; margin:0; letter-spacing:.02em; }
+  .sub { margin:0; font-size:.9rem; opacity:.95; }
+  .stats { display:flex; gap:8px; margin-top:14px; }
+  .stat { flex:1; background:var(--card); border-radius:12px; padding:8px 10px; text-align:center; }
+  .stat b { display:block; font-size:1.35rem; color:var(--accent); }
+  .stat span { font-size:.75rem; color:var(--muted); }
+  .today { color:#fff; font-size:.85rem; margin:8px 2px 0; text-align:center; }
+  .tabs { display:flex; gap:8px; margin-top:14px; }
+  .tab { flex:1; padding:10px; border:0; border-radius:10px; background:rgba(255,255,255,.35); color:#fff; font-weight:700; font-size:1rem; cursor:pointer; }
+  .tab[aria-selected="true"] { background:#fff; color:var(--accent); }
+  .panel { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; margin-top:12px; }
+  h2 { font-size:1.1rem; margin:0 0 6px; }
+  p { margin:0 0 10px; }
+  .muted { color:var(--muted); font-size:.9rem; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .btn { padding:9px 14px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:#fff; font-weight:600; font-size:.95rem; cursor:pointer; }
+  .btn.alt { background:transparent; color:var(--accent); }
+  .btn[aria-pressed="true"] { background:var(--accent); color:#fff; }
+  .btn.alt[aria-pressed="false"] { background:transparent; color:var(--accent); }
+  .btn:disabled { opacity:.5; cursor:default; }
+  .bar { display:flex; justify-content:space-between; font-weight:600; margin:8px 0 2px; }
+  .board { display:grid; gap:3px; aspect-ratio:6/5; width:100%; max-width:480px; margin:8px auto; background:var(--border); padding:3px; border-radius:10px; touch-action:manipulation; }
+  .tile { border:0; padding:0; border-radius:6px; background-color:#fff; cursor:pointer; position:relative; }
+  .tile.blank { background:transparent; cursor:default; }
+  .tile .n { position:absolute; left:4px; top:2px; font-size:.75rem; font-weight:700; background:rgba(255,255,255,.9); border-radius:6px; padding:0 6px; }
+  .board.won .tile { cursor:default; }
+  .msg { min-height:1.6em; font-weight:600; color:var(--ok); text-align:center; }
+  .preview { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .preview img { width:84px; border-radius:8px; border:1px solid var(--border); }
+  label.chk { font-size:.9rem; color:var(--muted); display:flex; gap:6px; align-items:center; }
+  .dino { width:100%; max-width:360px; margin:6px auto; display:block; border-radius:12px; border:1px solid var(--border); overflow:hidden; }
+  .dino svg { display:block; width:100%; height:auto; }
+  .code { text-align:center; font-family: ui-monospace, Menlo, Consolas, monospace; font-size:1.1rem; background:var(--soft); border:1px solid var(--border); border-radius:8px; padding:6px; margin:6px auto 12px; max-width:360px; }
+  .part { display:flex; align-items:center; gap:8px; margin:6px 0; }
+  .part .lbl { width:76px; color:var(--muted); font-size:.9rem; }
+  .part .val { flex:1; text-align:center; font-weight:600; }
+  .part button { width:42px; height:40px; border-radius:8px; border:1px solid var(--accent); background:#fff; color:var(--accent); font-size:1.3rem; cursor:pointer; }
+  .challenge { background:var(--soft); border:1px dashed var(--accent); border-radius:10px; padding:10px 12px; margin:14px 0 10px; }
+  .challenge.ok { border-color:var(--ok); }
+  .coll { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; margin-top:8px; }
+  .coll .item { position:relative; border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--soft); }
+  .coll .item button.load { display:block; width:100%; border:0; padding:0; background:none; cursor:pointer; }
+  .coll .item svg { display:block; width:100%; height:auto; }
+  .coll .item button.del { position:absolute; right:3px; top:3px; width:22px; height:22px; border-radius:11px; border:0; background:rgba(255,255,255,.9); color:var(--accent); font-weight:700; cursor:pointer; line-height:1; }
+  #toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); background:#1a1d2e; color:#fff; padding:10px 16px; border-radius:10px; font-weight:600; opacity:0; pointer-events:none; transition:opacity .2s; max-width:90vw; text-align:center; }
+  #toast.show { opacity:1; }
+  .note { color:#fff; font-size:.82rem; margin-top:24px; text-align:center; }
+  .note a { color:#fff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <img src="logo.svg" alt="MAZE logo" width="56" height="56" onerror="this.style.display='none'">
+    <div>
+      <h1>Dino Daily</h1>
+      <p class="sub">MAZE DINO &ndash; Puzzle Adventures</p>
+    </div>
+  </header>
+
+  <div class="stats" aria-live="polite">
+    <div class="stat"><b id="points">0</b><span>Points</span></div>
+    <div class="stat"><b id="streak">0</b><span>Day streak</span></div>
+  </div>
+  <p class="today" id="today"></p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="tiles" aria-selected="true">Sliding Tiles</button>
+    <button class="tab" role="tab" data-tab="mix" aria-selected="false">Mix &amp; Match</button>
+  </div>
+
+  <!-- SLIDING TILES -->
+  <section class="panel" id="p-tiles">
+    <h2>Sliding Tiles</h2>
+    <p class="muted">Slide the tiles to rebuild today's dino. Click or tap a tile, or use the arrow keys. Fewer moves and a faster time score more.</p>
+    <div class="row" style="margin-bottom:8px">
+      <button class="btn alt" id="size3" aria-pressed="true">3 &times; 3</button>
+      <button class="btn alt" id="size4" aria-pressed="false">4 &times; 4</button>
+      <label class="chk"><input type="checkbox" id="nums"> Show numbers</label>
+    </div>
+    <div class="preview"><img id="preview" alt="Picture to rebuild"><span class="muted" id="mode">Today's puzzle</span></div>
+    <div class="bar"><span id="moves">Moves: 0</span><span id="time">Time: 0:00</span></div>
+    <div class="board" id="board" aria-label="Sliding puzzle board"></div>
+    <div class="msg" id="slMsg"></div>
+    <div class="row">
+      <button class="btn alt" id="restart">Restart</button>
+      <button class="btn alt" id="practice">Practice puzzle</button>
+      <button class="btn alt" id="daily">Back to today's</button>
+    </div>
+  </section>
+
+  <!-- MIX & MATCH -->
+  <section class="panel" id="p-mix" hidden>
+    <h2>Mix &amp; Match</h2>
+    <p class="muted">Build a hybrid dino. Every look is a DNA code you can share.</p>
+    <div class="dino" id="dinoView"></div>
+    <div class="code" id="dnaCode">0-0-0-0-0</div>
+    <div id="parts"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="rand">Randomize</button>
+      <button class="btn alt" id="save">Save to collection</button>
+      <button class="btn alt" id="copy">Copy link</button>
+    </div>
+    <div class="challenge" id="challenge">
+      <b>Today's challenge</b>
+      <p id="chText" style="margin:4px 0 8px"></p>
+      <button class="btn" id="chSubmit">Submit challenge (+50)</button>
+    </div>
+    <h2 style="margin-top:14px">My collection</h2>
+    <p class="muted" id="collEmpty">Nothing saved yet.</p>
+    <div class="coll" id="coll"></div>
+  </section>
+
+  <p class="note" id="tipLine" hidden></p>
+  <p class="note">
+    Points are saved only in this browser. They are not MAZE tokens and have no cash value.<br>
+    $MAZE contract: <a href="https://etherscan.io/token/0x2F4f8d5094298BD4ddd774011bd0917052f4d1d2">0x2F4f8d5094298BD4ddd774011bd0917052f4d1d2</a>
+  </p>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+(() => {
+'use strict';
+
+// ---- Config ----
+const MAZE_DINO_URL = ''; // optional: URL of the maze-dino game (for wallet tipping); leave empty to hide the link
+
+// ---- Pure helpers (no DOM) ----
+//#pure-start
+const COLORS = [
+  {n:'Pink',   m:'#ff2fa8', d:'#d6187f', l:'#ffa6d6'},
+  {n:'Green',  m:'#3fbf6f', d:'#2a8f50', l:'#b5f0cc'},
+  {n:'Blue',   m:'#3a8dff', d:'#2262c4', l:'#b3d2ff'},
+  {n:'Orange', m:'#ff9a3c', d:'#d1701a', l:'#ffd9ad'},
+  {n:'Purple', m:'#9b5cff', d:'#6c35c9', l:'#dcc8ff'},
+  {n:'Teal',   m:'#18c4b8', d:'#0e8f86', l:'#a6f0ea'}
+];
+const PARTS = [
+  {label:'Head',    names:['Round','Long snout','Horned','Crested']},
+  {label:'Body',    names:['Plain','Plated','Spiky','Sailed']},
+  {label:'Tail',    names:['Pointy','Long curl','Club','Fluffy']},
+  {label:'Color',   names:COLORS.map(c => c.n)},
+  {label:'Pattern', names:['Plain','Stripes','Spots','Belly patch']}
+];
+const RANGES = PARTS.map(p => p.names.length);
+
+function hash(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19;}h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return(h^h>>>16)>>>0;}
+function rng(seed){let a=hash(String(seed));return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+let uid = 0;
+function dinoSVG(d){
+  const [h,b,t,c,p] = d, C = COLORS[c], m = C.m, dk = C.d, lt = C.l, id = 'cp' + (++uid);
+  const cx = 95, cy = 115;
+  const {rx, ry} = [{rx:42,ry:34},{rx:52,ry:28},{rx:40,ry:40},{rx:46,ry:38}][b];
+  const topY = x => cy - ry * Math.sqrt(Math.max(0, 1 - ((x - cx) / rx) ** 2));
+  let s = '';
+  // back features
+  if (b === 1) for (let i=-2;i<=2;i++){const x=cx+i*rx*.28,y=topY(x)+4;s+=`<polygon points="${x-9},${y} ${x},${y-20} ${x+9},${y}" fill="${dk}"/>`;}
+  if (b === 2) for (let i=-3;i<=3;i++){const x=cx+i*rx*.24,y=topY(x)+3;s+=`<polygon points="${x-5},${y} ${x},${y-13} ${x+5},${y}" fill="${dk}"/>`;}
+  if (b === 3) {const x1=cx-rx*.6,x2=cx+rx*.35;s+=`<path d="M${x1} ${topY(x1)+4} Q${cx-6} ${cy-ry-56} ${x2} ${topY(x2)+4}Z" fill="${dk}"/>`;}
+  // tail
+  const x0 = cx - rx + 8;
+  if (t === 0) s += `<path d="M${x0} ${cy-14} Q${x0-34} ${cy-6} ${x0-52} ${cy+24} Q${x0-28} ${cy+16} ${x0} ${cy+16}Z" fill="${m}"/>`;
+  if (t === 1) s += `<path d="M${x0} ${cy-12} C${x0-34} ${cy-6} ${x0-44} ${cy-40} ${x0-66} ${cy-46} C${x0-50} ${cy-22} ${x0-36} ${cy+10} ${x0} ${cy+14}Z" fill="${m}"/>`;
+  if (t === 2) {
+    s += `<path d="M${x0} ${cy-10} Q${x0-30} ${cy} ${x0-46} ${cy+22} L${x0-40} ${cy+32} Q${x0-22} ${cy+10} ${x0} ${cy+14}Z" fill="${m}"/><circle cx="${x0-46}" cy="${cy+27}" r="11" fill="${dk}"/>`;
+    [[-9,-9],[9,-8],[-10,10],[9,11]].forEach(([a,e]) => s += `<circle cx="${x0-46+a}" cy="${cy+27+e}" r="3.5" fill="${lt}"/>`);
+  }
+  if (t === 3) s += `<ellipse cx="${x0-12}" cy="${cy+6}" rx="24" ry="15" fill="${m}"/><ellipse cx="${x0-26}" cy="${cy+8}" rx="10" ry="8" fill="${lt}"/>`;
+  // legs
+  const ly = cy + ry - 10;
+  [cx-22, cx+12].forEach(x => s += `<rect x="${x}" y="${ly}" width="17" height="${170-ly}" rx="8" fill="${m}"/><ellipse cx="${x+10}" cy="168" rx="13" ry="5.5" fill="${dk}"/>`);
+  // neck
+  const hx = cx + rx + 8, hy = cy - ry - 12;
+  s += `<line x1="${cx+rx-22}" y1="${cy-ry+16}" x2="${hx+2}" y2="${hy+10}" stroke="${m}" stroke-width="26" stroke-linecap="round"/>`;
+  // body + pattern
+  s += `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${m}"/>`;
+  if (p) {
+    s += `<clipPath id="${id}"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/></clipPath><g clip-path="url(#${id})">`;
+    if (p === 1) for (let i=-3;i<=3;i++){const x=cx+i*15-6;s+=`<polygon points="${x},${cy-ry-2} ${x+9},${cy-ry-2} ${x-3},${cy+ry+2} ${x-12},${cy+ry+2}" fill="${dk}" opacity=".4"/>`;}
+    if (p === 2) [[-22,-10,7],[-4,-20,6],[16,-8,8],[-12,12,6],[8,18,7],[28,6,5],[-32,8,5]].forEach(([a,e,r]) => s += `<circle cx="${cx+a*rx/45}" cy="${cy+e*ry/36}" r="${r}" fill="${dk}" opacity=".5"/>`);
+    if (p === 3) s += `<ellipse cx="${cx+6}" cy="${cy+ry*.55}" rx="${rx*.72}" ry="${ry*.62}" fill="${lt}"/>`;
+    s += '</g>';
+  }
+  // arm
+  s += `<path d="M${cx+rx-18} ${cy-2} q10 2 14 12" stroke="${dk}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+  // head
+  const eye = (x,y) => `<circle cx="${x}" cy="${y}" r="4.5" fill="#fff"/><circle cx="${x+1}" cy="${y}" r="2.4" fill="#111"/>`;
+  if (h === 3) s += `<polygon points="${hx-14},${hy-14} ${hx-12},${hy-36} ${hx-2},${hy-17}" fill="${dk}"/><polygon points="${hx-4},${hy-17} ${hx+2},${hy-40} ${hx+8},${hy-18}" fill="${dk}"/>`;
+  if (h === 1) {
+    s += `<rect x="${hx-14}" y="${hy-14}" width="64" height="28" rx="14" fill="${m}"/>${eye(hx+6,hy-5)}<path d="M${hx+28} ${hy+6} q9 4 18 -3" stroke="#111" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="${hx+46}" cy="${hy-6}" r="1.8" fill="${dk}"/>`;
+  } else {
+    s += `<rect x="${hx-16}" y="${hy-18}" width="50" height="36" rx="18" fill="${m}"/>${eye(hx+10,hy-7)}<path d="M${hx+8} ${hy+7} q9 6 18 -3" stroke="#111" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="${hx+29}" cy="${hy-8}" r="1.8" fill="${dk}"/>`;
+    if (h === 2) s += `<polygon points="${hx+20},${hy-17} ${hx+32},${hy-40} ${hx+31},${hy-15}" fill="${lt}" stroke="${dk}" stroke-width="1.5"/>`;
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" role="img" aria-label="Dino"><rect width="240" height="200" fill="#fff0f8"/><ellipse cx="120" cy="173" rx="85" ry="8" fill="#f3c4e0"/><g transform="translate(30 0)">${s}</g></svg>`;
+}
+
+function neighbors(i, n){
+  const r = Math.floor(i / n), c = i % n, out = [];
+  if (r > 0) out.push(i - n);
+  if (r < n - 1) out.push(i + n);
+  if (c > 0) out.push(i - 1);
+  if (c < n - 1) out.push(i + 1);
+  return out;
+}
+const isSolved = b => b.every((v, i) => v === i);
+// Random walk from the solved board, so every shuffle is solvable.
+function shuffleBoard(n, seed){
+  const N = n * n, b = [...Array(N).keys()], r = rng(seed);
+  let blank = N - 1, prev = -1;
+  const steps = n === 3 ? 120 : 300;
+  const step = () => {
+    const opts = neighbors(blank, n).filter(x => x !== prev);
+    const pick = opts[Math.floor(r() * opts.length)];
+    [b[blank], b[pick]] = [b[pick], b[blank]];
+    prev = blank; blank = pick;
+  };
+  for (let k = 0; k < steps; k++) step();
+  while (isSolved(b)) step();
+  return b;
+}
+//#pure-end
+
+// ---- Dates, storage ----
+const pad = n => String(n).padStart(2, '0');
+const dayStr = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const yesterdayStr = () => { const d = new Date(); d.setDate(d.getDate() - 1); return dayStr(d); };
+const $ = s => document.querySelector(s);
+const KEY = 'mazeDinoDaily.v1';
+const blankStore = () => ({points:0, streak:0, lastDay:'', done:{}, collection:[]});
+let mem = null;
+function loadStore(){
+  try { const r = localStorage.getItem(KEY); if (r) return Object.assign(blankStore(), JSON.parse(r)); } catch (e) {}
+  return mem || blankStore();
+}
+let store = loadStore();
+function saveStore(){ mem = store; try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+const doneToday = () => (store.done && store.done[dayStr()]) || {};
+function markDone(k){ const t = dayStr(); store.done = {[t]: Object.assign({}, store.done && store.done[t], {[k]: true})}; }
+
+let toastTimer;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2800); }
+
+function renderStats(){
+  const today = dayStr(), live = store.lastDay === today || store.lastDay === yesterdayStr();
+  $('#points').textContent = store.points;
+  $('#streak').textContent = live ? store.streak : 0;
+  const d = doneToday(), mark = k => d[k] ? '\u2713' : '\u25CB';
+  $('#today').textContent = `Today: 3\u00D73 ${mark('t3')}  \u00B7  4\u00D74 ${mark('t4')}  \u00B7  Challenge ${mark('ch')}`;
+}
+
+// Awards points; the first award of a day also advances the streak and adds a streak bonus.
+function award(pts){
+  const today = dayStr();
+  let bonus = 0;
+  if (store.lastDay !== today) {
+    store.streak = store.lastDay === yesterdayStr() ? store.streak + 1 : 1;
+    store.lastDay = today;
+    bonus = Math.min(50, store.streak * 5);
+  }
+  store.points += pts + bonus;
+  saveStore(); renderStats();
+  return {pts, bonus};
+}
+
+// ---- Tabs ----
+function showTab(name){
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+  $('#p-tiles').hidden = name !== 'tiles';
+  $('#p-mix').hidden = name !== 'mix';
+}
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+// ---- Sliding tiles ----
+const randomDna = () => RANGES.map(m => Math.floor(Math.random() * m));
+const dailyDna = salt => { const r = rng(dayStr() + salt); return RANGES.map(m => Math.floor(r() * m)); };
+const SL = {n:3, board:[], moves:0, start:0, timer:null, won:false, practice:false, seed:'', src:''};
+
+function fmtTime(s){ return `${Math.floor(s/60)}:${pad(s%60)}`; }
+function elapsed(){ return SL.start ? Math.floor((Date.now() - SL.start) / 1000) : 0; }
+function updateBar(){ $('#moves').textContent = `Moves: ${SL.moves}`; $('#time').textContent = `Time: ${fmtTime(elapsed())}`; }
+
+function resetSliding(){
+  clearInterval(SL.timer);
+  SL.timer = null; SL.start = 0; SL.moves = 0; SL.won = false;
+  SL.board = shuffleBoard(SL.n, SL.seed);
+  $('#slMsg').textContent = '';
+  renderSliding(); updateBar();
+}
+function newSliding(n, practice){
+  SL.n = n; SL.practice = !!practice;
+  const dna = practice ? randomDna() : dailyDna('tiles');
+  SL.seed = practice ? 'p' + Math.random() : `${dayStr()}-shuffle-${n}`;
+  SL.src = 'data:image/svg+xml,' + encodeURIComponent(dinoSVG(dna));
+  $('#preview').src = SL.src;
+  $('#mode').textContent = practice ? 'Practice puzzle (no points)' : "Today's puzzle";
+  $('#size3').setAttribute('aria-pressed', String(n === 3));
+  $('#size4').setAttribute('aria-pressed', String(n === 4));
+  resetSliding();
+}
+function renderSliding(){
+  const n = SL.n, el = $('#board'), nums = $('#nums').checked;
+  el.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+  el.style.gridTemplateRows = `repeat(${n}, 1fr)`;
+  el.className = 'board' + (SL.won ? ' won' : '');
+  el.textContent = '';
+  SL.board.forEach((v, i) => {
+    const hole = v === n * n - 1 && !SL.won;
+    const t = document.createElement(hole ? 'div' : 'button');
+    t.className = 'tile' + (hole ? ' blank' : '');
+    if (!hole) {
+      t.dataset.i = i;
+      t.setAttribute('aria-label', `Tile ${v + 1}`);
+      t.style.backgroundImage = `url("${SL.src}")`;
+      t.style.backgroundSize = `${n * 100}% ${n * 100}%`;
+      t.style.backgroundPosition = `${(v % n) / (n - 1) * 100}% ${Math.floor(v / n) / (n - 1) * 100}%`;
+      if (nums) { const s = document.createElement('span'); s.className = 'n'; s.textContent = v + 1; t.appendChild(s); }
+    }
+    el.appendChild(t);
+  });
+}
+function moveTile(i){
+  if (SL.won) return;
+  const n = SL.n, bi = SL.board.indexOf(n * n - 1);
+  if (i === bi) return;
+  const ri = Math.floor(i / n), ci = i % n, rb = Math.floor(bi / n), cb = bi % n;
+  if (ri !== rb && ci !== cb) return;
+  const d = ri === rb ? (i > bi ? 1 : -1) : (i > bi ? n : -n);
+  if (!SL.start) { SL.start = Date.now(); SL.timer = setInterval(updateBar, 500); }
+  let cur = bi;
+  while (cur !== i) {
+    const nx = cur + d;
+    [SL.board[cur], SL.board[nx]] = [SL.board[nx], SL.board[cur]];
+    cur = nx; SL.moves++;
+  }
+  if (isSolved(SL.board)) win(); else renderSliding();
+  updateBar();
+}
+function win(){
+  SL.won = true; clearInterval(SL.timer);
+  const secs = elapsed(), n = SL.n;
+  const base = n === 3 ? 100 : 200, par = n === 3 ? 30 : 90;
+  const pts = base + Math.max(0, 2 * par - SL.moves) + Math.max(0, 120 - secs);
+  const k = 't' + n;
+  renderSliding(); updateBar();
+  if (SL.practice) { $('#slMsg').textContent = 'Solved! Practice puzzles do not earn points.'; return; }
+  if (doneToday()[k]) { $('#slMsg').textContent = 'Solved! You already earned points for this puzzle today.'; return; }
+  markDone(k);
+  const r = award(pts);
+  $('#slMsg').textContent = `Solved in ${SL.moves} moves! +${r.pts} points` + (r.bonus ? ` (+${r.bonus} streak bonus)` : '');
+}
+$('#board').addEventListener('click', e => { const b = e.target.closest('button.tile'); if (b) moveTile(+b.dataset.i); });
+document.addEventListener('keydown', e => {
+  if ($('#p-tiles').hidden || SL.won) return;
+  const n = SL.n, bi = SL.board.indexOf(n * n - 1), c = bi % n;
+  let from = -1;
+  if (e.key === 'ArrowLeft'  && c < n - 1) from = bi + 1;
+  if (e.key === 'ArrowRight' && c > 0)     from = bi - 1;
+  if (e.key === 'ArrowUp'    && bi + n < n * n) from = bi + n;
+  if (e.key === 'ArrowDown'  && bi - n >= 0)    from = bi - n;
+  if (e.key.startsWith('Arrow')) e.preventDefault();
+  if (from >= 0) moveTile(from);
+});
+$('#size3').addEventListener('click', () => newSliding(3, SL.practice));
+$('#size4').addEventListener('click', () => newSliding(4, SL.practice));
+$('#restart').addEventListener('click', resetSliding);
+$('#practice').addEventListener('click', () => newSliding(SL.n, true));
+$('#daily').addEventListener('click', () => newSliding(SL.n, false));
+$('#nums').addEventListener('change', renderSliding);
+
+// ---- Mix & Match ----
+let dna = [0, 0, 0, 0, 0];
+const valEls = [];
+PARTS.forEach((part, i) => {
+  const row = document.createElement('div'); row.className = 'part';
+  const lbl = document.createElement('span'); lbl.className = 'lbl'; lbl.textContent = part.label;
+  const prev = document.createElement('button'); prev.textContent = '\u2039'; prev.setAttribute('aria-label', `Previous ${part.label}`);
+  const val = document.createElement('span'); val.className = 'val';
+  const next = document.createElement('button'); next.textContent = '\u203A'; next.setAttribute('aria-label', `Next ${part.label}`);
+  prev.onclick = () => { dna[i] = (dna[i] + RANGES[i] - 1) % RANGES[i]; renderBuilder(); };
+  next.onclick = () => { dna[i] = (dna[i] + 1) % RANGES[i]; renderBuilder(); };
+  row.append(lbl, prev, val, next);
+  $('#parts').appendChild(row); valEls.push(val);
+});
+
+function challenge(){
+  const r = rng(dayStr() + 'challenge'), idx = [0,1,2,3,4], picks = [];
+  for (let k = 0; k < 2; k++) picks.push(idx.splice(Math.floor(r() * idx.length), 1)[0]);
+  picks.sort();
+  return picks.map(i => ({i, v: Math.floor(r() * RANGES[i])}));
+}
+const CH = challenge();
+const chMatches = () => CH.every(({i, v}) => dna[i] === v);
+
+function renderBuilder(){
+  $('#dinoView').innerHTML = dinoSVG(dna);
+  $('#dnaCode').textContent = dna.join('-');
+  dna.forEach((v, i) => valEls[i].textContent = PARTS[i].names[v]);
+  const ok = chMatches(), done = !!doneToday().ch;
+  $('#chText').textContent = 'Build a dino with: ' + CH.map(({i, v}) => `${PARTS[i].label} \u2013 ${PARTS[i].names[v]}`).join(' + ') + (done ? '  \u2713 done today' : ok ? '  \u2713 matches!' : '');
+  $('#challenge').className = 'challenge' + (ok || done ? ' ok' : '');
+  $('#chSubmit').disabled = done;
+  renderCollection();
+}
+function parseDna(s){
+  const m = /^(\d)-(\d)-(\d)-(\d)-(\d)$/.exec(s || '');
+  if (!m) return null;
+  const d = m.slice(1).map(Number);
+  return d.every((v, i) => v < RANGES[i]) ? d : null;
+}
+function renderCollection(){
+  const box = $('#coll'); box.textContent = '';
+  $('#collEmpty').hidden = store.collection.length > 0;
+  store.collection.forEach(code => {
+    const d = parseDna(code); if (!d) return;
+    const item = document.createElement('div'); item.className = 'item';
+    const load = document.createElement('button'); load.className = 'load'; load.setAttribute('aria-label', `Load dino ${code}`);
+    load.innerHTML = dinoSVG(d);
+    load.onclick = () => { dna = d.slice(); renderBuilder(); };
+    const del = document.createElement('button'); del.className = 'del'; del.textContent = '\u00D7'; del.setAttribute('aria-label', `Remove dino ${code}`);
+    del.onclick = () => { store.collection = store.collection.filter(c => c !== code); saveStore(); renderCollection(); };
+    item.append(load, del); box.appendChild(item);
+  });
+}
+$('#rand').onclick = () => { dna = randomDna(); renderBuilder(); };
+$('#save').onclick = () => {
+  const code = dna.join('-');
+  if (store.collection.includes(code)) return toast('Already in your collection');
+  if (store.collection.length >= 12) return toast('Collection is full (12). Remove one first.');
+  store.collection.push(code); saveStore(); renderCollection(); toast('Saved to your collection');
+};
+$('#copy').onclick = () => {
+  const url = location.href.split('#')[0] + '#dna=' + dna.join('-');
+  (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(
+    () => toast('Link copied'),
+    () => { location.hash = 'dna=' + dna.join('-'); toast('Copy the link from the address bar'); }
+  );
+};
+$('#chSubmit').onclick = () => {
+  if (doneToday().ch) return;
+  if (!chMatches()) return toast("Not quite. Match every part of today's challenge.");
+  markDone('ch');
+  const r = award(50);
+  toast(`Challenge complete! +${r.pts} points` + (r.bonus ? ` (+${r.bonus} streak bonus)` : ''));
+  renderBuilder();
+};
+
+// ---- Start ----
+if (MAZE_DINO_URL) {
+  const tip = $('#tipLine'); tip.hidden = false;
+  const a = document.createElement('a'); a.href = MAZE_DINO_URL; a.textContent = 'Tip the dino with MAZE in the maze-dino game';
+  tip.appendChild(a);
+}
+newSliding(3, false);
+const fromHash = parseDna((location.hash.match(/dna=([\d-]+)/) || [])[1]);
+if (fromHash) { dna = fromHash; showTab('mix'); }
+renderBuilder();
+renderStats();
+})();
+</script>
+</body>
+</html>
