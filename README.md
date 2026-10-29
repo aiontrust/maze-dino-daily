@@ -13,6 +13,8 @@ A free daily puzzle game for the MAZE DINO – Puzzle Adventures platform. One s
 | --- | --- |
 | `index.html` | The whole game (HTML, CSS, JS, and the SVG dino parts) |
 | `logo.svg` | The pink-framed circular maze logo (copy it from the MAZE landing page repo; the page hides the image if it is missing) |
+| `sw.js`, `manifest.webmanifest` | Offline support and install (see below) |
+| `icon-192.png`, `icon-512.png` | App icons for the home screen |
 
 ## Publish on GitHub Pages
 
@@ -41,6 +43,13 @@ At the top of the script in `index.html`:
 ```js
 const MAZE_DINO_URL = ''; // set to the maze-dino game URL to show a "Tip the dino with MAZE" link
 ```
+
+## Offline and install
+
+- After one visit online, Dino Daily opens without a connection. Points, streak and your saved dinos are already stored on the device, so everything keeps working.
+- When you are online the newest page is always loaded; the saved copy is only used when there is no connection.
+- **Install:** on iPhone use Safari → Share → Add to Home Screen. On Android use the Chrome menu → Install app. It then opens full screen with the MAZE dino icon.
+- If a phone keeps showing an old logo or icon, change the version name in `sw.js` (`mdd-daily-v1` to `mdd-daily-v2`), commit, and open the game online once.
 
 ## Ideas for later
 

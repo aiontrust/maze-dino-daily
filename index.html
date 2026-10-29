@@ -6,6 +6,9 @@
 <title>Dino Daily | MAZE DINO Puzzle Adventures</title>
 <meta name="description" content="A free daily dino puzzle: slide the tiles or mix and match a hybrid dino. Earn points and keep your streak.">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#ff2fa8">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
   :root { --bg:#ff2fa8; --card:#fff; --text:#1a1d2e; --muted:#5b6180; --accent:#c4007a; --border:#f3c4e0; --soft:#fff0f8; --ok:#1a9e5c; }
   * { box-sizing: border-box; }
@@ -480,6 +483,12 @@ if (fromHash) { dna = fromHash; showTab('mix'); }
 renderBuilder();
 renderStats();
 })();
+</script>
+<script>
+// Offline support: remember this game so it opens without a connection.
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+}
 </script>
 </body>
 </html>
